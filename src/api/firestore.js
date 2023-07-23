@@ -293,7 +293,6 @@ export const verifyNo = async (startDate, otherUserID) => {
   await setDoc(docRef, {
     active: false
   }, { merge: true });  
-
 }
 
 export const verifyYes = async (startDate, otherUserID) => {
