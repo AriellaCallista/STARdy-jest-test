@@ -3,36 +3,36 @@ import { View, Text, StyleSheet, TouchableHighlight, Alert, TouchableOpacity } f
 
 import { Entypo } from '@expo/vector-icons'
 
-export default function Buttons({ nav }) {
+export default function Buttons({ navigation }) {
 
     const toDo = () => {
-        nav.navigate('To Do List');
+        navigation.navigate('To Do List');
     }
     
     const notes = () => {
-        nav.navigate('Notes');
+        navigation.navigate('Notes');
     }
     
     const encouragement = () => {
-        nav.navigate('Encouragement Notes!');
+        navigation.navigate('Encouragement Notes!');
     }
     
 
     return (
         <View style={styles.container}>
-            <TouchableOpacity onPress={toDo}>
+            <TouchableOpacity onPress={toDo} testID='toDoButton'>
                 <View style={styles.button}>
                     <Text style={styles.text}>To Do</Text>
                 </View>
             </TouchableOpacity>
 
-            <TouchableOpacity onPress={notes}>
+            <TouchableOpacity onPress={notes} testID='notesButton'>
                 <View style={styles.button}>
                     <Text style={styles.text}>Notes</Text>
                 </View>
             </TouchableOpacity>
 
-            <TouchableOpacity onPress={encouragement}>
+            <TouchableOpacity onPress={encouragement} testID='encouragementButton'>
                 <View style={styles.button}>
                     <Entypo name='heart' size={24} color='#f6cefc' />
                 </View>

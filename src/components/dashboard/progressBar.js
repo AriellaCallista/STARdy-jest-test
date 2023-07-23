@@ -18,13 +18,16 @@ const ProgressBar = ({ navigation }) => {
     const [level, setLevel] = useState(0);
 
     const userRef = doc(db, "users", authentication.currentUser.uid);
+
     useFocusEffect(
-        useCallback(() => {
-            getDoc(userRef)
-                .then((doc) => {
-                    console.log(doc.get('xp'))
-                    setUserXP(doc.get('xp')) 
-                }) 
+        useCallback(async () => {
+            const docSnap = await getDoc(userRef);
+            setUserXP(docSnap.get('xp'));
+            // getDoc(userRef)
+            //     .then((doc) => {
+            //         console.log(doc.get('xp'))
+            //         setUserXP(doc.get('xp')) 
+            //     }) 
                 
             
          }, [])
@@ -91,7 +94,7 @@ const ProgressBar = ({ navigation }) => {
 
         
             
-                <TouchableOpacity onPress={() => goToLeaderboard()}>
+                <TouchableOpacity onPress={() => goToLeaderboard()} testID='leaderboardButton'>
                     <View style={styles.progress}>
                         <View style={{
                             display: 'flex',

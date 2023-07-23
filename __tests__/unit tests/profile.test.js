@@ -18,59 +18,9 @@ describe('Client firestore operations', () => {
           }, {merge: true})
     })
 
-    it('fail to save profile changes if at least one of the fields is empty', () => {
+    it('fails to save profile changes if at least one of the fields is empty', () => {
         const res = saveChanges(navigation, 'test', 'F', null, false);
         expect(res).toEqual('Fail');
         //expect(Alert.alert).toHaveBeenCalledWith('Fields cannot be empty!') // bc of no fireEvent press?
     })
 })
-
-
-// mocks
-jest.mock("firebase/app", () => {
-    return {
-      initializeApp: jest.fn(() => Promise.resolve(true)),
-    }
-  });
-  
-  jest.mock("firebase/auth", () => {
-    return {
-      getAuth: jest.fn(() => Promise.resolve(true)).mockReturnValue({ currentUser: { uid: 'uid', email: 'test@gmail.com'}}),
-      createUserWithEmailAndPassword: jest.fn(() => Promise.resolve(true)),
-      signInWithEmailAndPassword: jest.fn(() => Promise.resolve(true))
-    }
-  })
-  
-  jest.mock("firebase/firestore", () => {
-    return {
-      doc: jest.fn().mockReturnValue,
-      getFirestore: jest.fn(),
-      getDoc: jest.fn(() => {
-        return {
-          get: jest.fn(),
-          set: jest.fn()
-        }
-      }),
-      // query: jest.fn(),
-      // collection: jest.fn(),
-      setDoc: jest.fn(() => Promise.resolve(true)),
-      // orderBy: jest.fn(),
-      // limit: jest.fn()
-    }
-  })
-  
-  jest.mock("firebase/storage", () => {
-    return {
-      getStorage: jest.fn(() => Promise.resolve(true)),
-      ref: jest.fn(() => {
-        return {
-          child: jest.fn(() => {
-            return {
-              put: jest.fn(() => Promise.resolve(true))
-            }
-          })
-        }
-      })
-    }
-  })
-

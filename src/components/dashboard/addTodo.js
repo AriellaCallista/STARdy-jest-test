@@ -1,37 +1,231 @@
-import React, { useState } from 'react';
-import { StyleSheet, View, TextInput, Button } from 'react-native';
+import React, { Component } from 'react';
+import {
+  Text,
+  View,
+  TextInput,
+  StyleSheet,
+  StatusBar,
+  Dimensions,
+  Platform,
+  ScrollView,
+  ActivityIndicator,
+} from 'react-native';
 
-export default function AddTodo({ submitHandler }) {
-  [text, setText] = useState('');
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-  const changeHandler = (val) => {
-    setText(val);
+import { authentication } from '../../../config';
+
+import 'react-native-get-random-values';
+import { v1 as uuidv1 } from 'uuid';
+import { LinearGradient } from 'expo-linear-gradient';
+
+const { height, width } = Dimensions.get('window');
+
+import TodoItem from './todoItem'; 
+
+export default class AddTodo extends Component {
+  state = {
+    newTodoItem: '',
+    dataIsReady: false,
+    todos: {}, // add this
+  };
+  newTodoItemController = (textValue) => {
+    this.setState({
+      newTodoItem: textValue,
+    });
+    // console.log('data', this.state);
+  };
+  componentDidMount = () => {
+    this.loadTodos();
   };
 
-  const pressHandler = () => {
-    submitHandler(text);
-    setText('');
-  }
+  loadTodos = async () => {
+    try {
+      const getTodos = await AsyncStorage.getItem(authentication.currentUser.uid + '/todos');
+      const parsedTodos = JSON.parse(getTodos);
+      this.setState({ dataIsReady: true, todos: parsedTodos || {} });
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
-  return (
-    <View>
-      <TextInput 
-        style={styles.input} 
-        placeholder='new todo...'
-        onChangeText={changeHandler} 
-        value={text} 
-      />
-      <Button color='#007788' onPress={pressHandler} title='Add ' />
-    </View>
-  );
+  saveTodos = (newToDos) => {
+    AsyncStorage.setItem(authentication.currentUser.uid + '/todos', JSON.stringify(newToDos));
+  };
+  addTodo = () => {
+    const { newTodoItem } = this.state;
+
+    if (newTodoItem !== '') {
+      this.setState((prevState) => {
+        const ID = uuidv1();
+        const newToDoObject = {
+          [ID]: {
+            id: ID,
+            isCompleted: false,
+            textValue: newTodoItem,
+            createdAt: Date.now(),
+          },
+        };
+        const newState = {
+          ...prevState,
+          newTodoItem: '',
+          todos: {
+            ...prevState.todos,
+            ...newToDoObject,
+          },
+        };
+
+        this.saveTodos(newState.todos); // add this
+        return { ...newState };
+      });
+    }
+  };
+
+  deleteTodo = (id) => {
+    this.setState((prevState) => {
+      const todos = prevState.todos;
+      delete todos[id];
+      const newState = {
+        ...prevState,
+        ...todos,
+      };
+      this.saveTodos(newState.todos); // add this
+      return { ...newState };
+    });
+  };
+
+  inCompleteTodo = (id) => {
+    this.setState((prevState) => {
+      const newState = {
+        ...prevState,
+        todos: {
+          ...prevState.todos,
+          [id]: {
+            ...prevState.todos[id],
+            isCompleted: false,
+          },
+        },
+      };
+      this.saveTodos(newState.todos); // add this
+      return { ...newState };
+    });
+  };
+
+  completeTodo = (id) => {
+    this.setState((prevState) => {
+      const newState = {
+        ...prevState,
+        todos: {
+          ...prevState.todos,
+          [id]: {
+            ...prevState.todos[id],
+            isCompleted: true,
+          },
+        },
+      };
+      this.saveTodos(newState.todos); // add this
+      return { ...newState };
+    });
+  };
+  updateTodo = (id, textValue) => {
+    this.setState((prevState) => {
+      const newState = {
+        ...prevState,
+        todos: {
+          ...prevState.todos,
+          [id]: {
+            ...prevState.todos[id],
+            textValue: textValue,
+          },
+        },
+      };
+      this.saveTodos(newState.todos); // add this
+      return { ...newState };
+    });
+  };
+  render() {
+    const { newTodoItem, dataIsReady, todos } = this.state;
+
+    if (!dataIsReady) {
+      return <ActivityIndicator />;
+    }
+
+    return (
+      <LinearGradient style={styles.container} colors={['#007788', '#eef1e1']}>
+        <StatusBar barStyle="light-content" />
+
+        {/* <Text style={styles.appTitle}>Todo List</Text> */}
+        <View style={styles.card}>
+          <TextInput
+            style={styles.input}
+            placeholder={'Add an item!'}
+            value={newTodoItem}
+            onChangeText={this.newTodoItemController}
+            placeholderTextColor={'#999'}
+            returnKeyType={'done'}
+            autoCorrect={false}
+            onSubmitEditing={this.addTodo}
+          />
+          <ScrollView contentContainerStyle={styles.listContainer}>
+            {Object.values(todos).map((todo) => (
+              <TodoItem
+                key={todo.id}
+                {...todo}
+                deleteTodo={this.deleteTodo}
+                inCompleteTodo={this.inCompleteTodo}
+                completeTodo={this.completeTodo}
+                updateTodo={this.updateTodo} // add this
+              />
+            ))}
+          </ScrollView>
+        </View>
+      </LinearGradient>
+    );
+  }
 }
 
 const styles = StyleSheet.create({
-  input: {
+  container: {
+    flex: 1,
+    alignItems: 'center',
+    backgroundColor: '#eef1e1',
+  },
+  appTitle: {
+    color: '#fff',
+    fontSize: 18,
+    marginTop: 10,
     marginBottom: 10,
-    paddingHorizontal: 8,
-    paddingVertical: 6,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  card: {
+    backgroundColor: '#fff',
+    flex: 1,
+    width: width - 25,
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+    ...Platform.select({
+      ios: {
+        shadowColor: 'rgb(50,50,50)',
+        shadowOpacity: 0.5,
+        shadowRadius: 5,
+        shadowOffset: {
+          height: -1,
+          width: 0,
+        },
+      },
+      android: {
+        elevation: 5,
+      },
+    }),
+  },
+  input: {
+    padding: 20,
+    borderBottomColor: '#bbb',
     borderBottomWidth: 1,
-    borderBottomColor: '#ddd',
+    fontSize: 16,
+  },
+  listContainer: {
+    alignItems: 'center',
   },
 });

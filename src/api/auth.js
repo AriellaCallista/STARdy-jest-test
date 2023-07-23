@@ -25,4 +25,5 @@ export async function login (navigation, email, password ) {
         console.log('Error at login ', error);
         Alert.alert('Error at login ' + error);
       });
+    // navigation.navigate('Main Tab')
 };

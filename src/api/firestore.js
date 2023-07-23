@@ -21,7 +21,7 @@ export const submitUserData = (navigation, name, gender, major, year, appState) 
       console.log(error)
       console.log(appState)
     });
-    navigation.navigate('Main Tab')
+    navigation.navigate('OnboardingScreen')
 }
 
 export const saveChanges = (navigation, name, gender, major, year) => {
@@ -163,20 +163,20 @@ export const acceptRequest = async (item, currUserName, currUserID, currUserPhot
 
   // if current user is in a focus session, should not be able to accept the request
 
-  // const docRef = doc(db, "focusSession", authentication.currentUser.uid, "partners", item.id)
-  // await setDoc(docRef, {
-  //     name: item.name,
-  //     active: true,
-  //     userID: item.id,
-  //     photoURL: item.photoURL,
-  //     start: startDay,
-  //     matched: authentication.currentUser.uid
+  const docRef = doc(db, "focusSession", authentication.currentUser.uid, "partners", item.id)
+  await setDoc(docRef, {
+      name: item.name,
+      active: true,
+      userID: item.id,
+      photoURL: item.photoURL,
+      start: startDay,
+      matched: authentication.currentUser.uid
 
-  // }, { merge: true }).then(() => {
-  //     console.log('submitted!')
-  // }).then((error) => {
-  //     console.log(error)
-  // })
+  }, { merge: true }).then(() => {
+      console.log('submitted!')
+  }).then((error) => {
+      console.log(error)
+  })
 
   // need current user data!
   const docRef2 = doc(db, "focusSession", item.id, "partners", authentication.currentUser.uid)
@@ -212,20 +212,18 @@ export const finalize = async (startDate) => {
   // check if submitted within deadline
   if (currentDate <= expectedSubmissionDate) {
     const currUserRef = doc(db, "users", authentication.currentUser.uid);
-    getDoc(currUserRef)
-    .then((doc) => {
-      const prevXP = doc.get('xp');
-      const newXP = prevXP + 100;
-      setDoc(currUserRef, {
-        xp: newXP
-      }, {merge: true})
-    })
+    const docSnap = await getDoc(currUserRef);
+    const prevXP = docSnap.get('xp');
+    const newXP = prevXP + 100;
+    setDoc(currUserRef, {
+      xp: newXP
+    }, { merge: true });
+
     Alert.alert("Another successful day!", 
     "Wait patiently for your XP as your partner verifies your evidence, in the meantime, feel free to start another focus session!")
 
   } else if (currentDate > expectedSubmissionDate) {
       console.log(currentDate);
-      navigation.navigate('Main Tab')
       Alert.alert("Sorry, you've missed the deadline for submission", "You will not be getting XPs this time")
       
   } 
@@ -257,38 +255,33 @@ export const verifyNo = async (startDate, otherUserID) => {
   const partnerRef = doc(db, "users", otherUserID);
   if (currentDate <= expectedSubmissionDate) {
     // current user gets 150 xp
-    getDoc(currUserRef)
-    .then((doc) => {
-      const prevXP = doc.get('xp');
-      const newXP = prevXP + 150;
-      setDoc(currUserRef, {
-        xp: newXP
-      }, {merge: true})
-    })
+    const docSnap = await getDoc(currUserRef);
+    const prevXP = docSnap.get('xp');
+    const newXP = prevXP + 150;
+    setDoc(currUserRef, {
+      xp: newXP
+    }, { merge: true });
   
     // partner loses 200 xp
-    getDoc(partnerRef)
-    .then((doc) => {
-      const prevXP = doc.get('xp');
-      const newXP = prevXP - 200;
-      setDoc(partnerRef, {
-        xp: newXP
-      }, {merge: true})
-    })
+    const docSnap2 = await getDoc(partnerRef);
+    const prevXP2 = docSnap2.get('xp');
+    const newXP2 = prevXP2 - 200;
+    setDoc(partnerRef, {
+      xp: newXP2
+    }, { merge: true });
 
     Alert.alert("Thanks for verifying!", 
     "This marks the end of your focus session. Check your XP accumulation under dashboard!")
 
   } else {
     // partner loses 200 XP
-    getDoc(partnerRef)
-    .then((doc) => {
-      const prevXP = doc.get('xp');
-      const newXP = prevXP - 200;
-      setDoc(partnerRef, {
-        xp: newXP
-      }, {merge: true})
-    })
+    const docSnap = await getDoc(partnerRef);
+    const prevXP = docSnap.get('xp');
+    const newXP = prevXP - 200;
+    setDoc(partnerRef, {
+      xp: newXP
+    }, { merge: true });
+
 
     Alert.alert("You've missed the deadline for verification XP :(", 
     "Unfortunately you will not be getting any XP for verification. Don't miss the deadline next time!")
@@ -300,6 +293,7 @@ export const verifyNo = async (startDate, otherUserID) => {
   await setDoc(docRef, {
     active: false
   }, { merge: true });  
+
 }
 
 export const verifyYes = async (startDate, otherUserID) => {
@@ -313,62 +307,41 @@ export const verifyYes = async (startDate, otherUserID) => {
   // delete evidence once verified
   await deleteDoc(doc(db, "evidence", otherUserID, "images", authentication.currentUser.uid));
 
+  const currUserRef = doc(db, "users", authentication.currentUser.uid);
+  const partnerRef = doc(db, "users", otherUserID);
   if (currentDate <= expectedSubmissionDate) {
     // current user gets 150 xp 
-    getDoc(currUserRef)
-    .then((doc) => {
-      const prevXP = doc.get('xp');
-      console.log(doc.get('xp'))
-      console.log('prevXP: '+ prevXP)
-      const newXP = prevXP + 150;
-      console.log('curr newXP: ' + newXP)
-      setDoc(currUserRef, {
-        xp: newXP
-      }, {merge: true}).then(() => {
-        // data saved successfully
-        console.log('data submitted');
-      }).catch((error) => {
-        //the write failed
-        console.log(error)
-      });
-
-    })
+    const docSnap = await getDoc(currUserRef);
+    const prevXP = docSnap.get('xp');
+    const newXP = prevXP + 150;
+    setDoc(currUserRef, {
+      xp: newXP
+    }, { merge: true });
 
     // partner gets 200 xp
-    getDoc(partnerRef)
-      .then((doc) => {
-        const prevXP = doc.get('xp');
-        const newXP = prevXP + 200;
-        setDoc(partnerRef, {
-          xp: newXP
-        }, {merge: true})
-      })
+    const docSnap2 = await getDoc(partnerRef);
+    const prevXP2 = docSnap2.get('xp');
+    const newXP2 = prevXP2 + 200;
+    setDoc(partnerRef, {
+      xp: newXP2
+    }, { merge: true });
+
 
     // end focus session and return to main page
     Alert.alert("Thanks for verifying!", 
-    "This marks the end of your focus session. Check your XP accumulation under dashboard!",
-    [{
-      text: 'OK',
-      onPress: () => navigation.navigate('Main Tab')
-    }])
+    "This marks the end of your focus session. Check your XP accumulation under dashboard!")
     
   } else { // missed deadline
     // partner gets 200 XP
-    getDoc(partnerRef)
-    .then((doc) => {
-      const prevXP = doc.get('xp');
-      const newXP = prevXP + 200;
-      setDoc(partnerRef, {
-        xp: newXP
-      }, {merge: true})
-    })
+    const docSnap = await getDoc(partnerRef);
+    const prevXP = docSnap.get('xp');
+    const newXP = prevXP + 200;
+    setDoc(partnerRef, {
+      xp: newXP
+    }, { merge: true });
 
     Alert.alert("You've missed the deadline for verification :(", 
-    "Unfortunately you will not be getting any XP for verification. Don't miss the deadline next time!"
-    [{
-      text: 'OK',
-      onPress: () => navigation.navigate('Main Tab')
-    }])
+    "Unfortunately you will not be getting any XP for verification. Don't miss the deadline next time!")
   }
 
   // set active to false

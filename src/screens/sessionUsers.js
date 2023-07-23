@@ -22,29 +22,40 @@ export default function SessionUsers() {
 
   const focusSession = createMaterialTopTabNavigator();
 
-  return <focusSession.Navigator 
+  return (
+    <View testID='sessionUsers'>
+      <focusSession.Navigator 
             screenOptions={{
               tabBarLabelStyle: { fontSize: 14 },
               tabBarLabelStyle: { color: '#f6f6f6'},
               tabBarStyle: { backgroundColor: '#007788', paddingTop: (Platform.OS == 'ios') ? 60 : 20},
               
             }}
-          >
+    >
 
-    <focusSession.Screen 
-      name='Friends' 
-      component={friends} 
-    />
-
-    <focusSession.Screen 
-      name='Random' 
-      component={random}
+      <focusSession.Screen 
+        name='Friends' 
+        component={friends} 
       />
 
-    <focusSession.Screen 
-      name='Add' 
-      component={Add}
-      />
+      <focusSession.Screen 
+        name='Random' 
+        component={random}
+        />
 
-  </focusSession.Navigator>
+      <focusSession.Screen 
+        name='Add' 
+        component={Add}
+        />
+
+      </focusSession.Navigator>
+
+    </View>
+    
+
+  )
+  
+  
+
+   
 } 

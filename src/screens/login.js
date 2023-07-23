@@ -77,6 +77,7 @@ const Login = ({ navigation }) => {
          
         </View>
         <TextInput 
+            testID="Login.emailInput"
             value={email} 
             style={styles.input} 
             placeholder='Email'
@@ -90,16 +91,18 @@ const Login = ({ navigation }) => {
             secureTextEntry={true}
             onChangeText={text => setPassword(text)}
             leftIcon={{type:'material', name:'lock', color: '#007788'}}
+            testID="Login.passwordInput"
         />
 
         <Text 
+          testID='goToRegister'
           style={{color: '#00008B',
                   right: -29,
                   marginTop: 10}}
           onPress={() => navigation.navigate('Sign Up')}
         >Don't have an account? Register here!</Text>
 
-        <TouchableOpacity onPress={onLoginPressed}>
+        <TouchableOpacity onPress={onLoginPressed} testID='LoginButton'>
             <View style={styles.button}>
                 <Text style={styles.buttonText}>Log In</Text>
             </View>

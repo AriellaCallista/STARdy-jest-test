@@ -22,7 +22,7 @@ import { db, authentication } from '../../../config';
 import { setDoc, doc, getDocs, query, collection, where, getDoc } from "firebase/firestore";
 import { addFriend, fetchUserFriends } from '../../api/firestore';
 
-import { queryUsersByName } from '../../services/random';
+import { queryUsersByName } from '../../api/firestore';
 //each user display: profile picture, name, gender, major, year of study
 
 export default function Add() {
@@ -40,17 +40,24 @@ export default function Add() {
     
    }, [searchParam])
 
-   useEffect(() => {
+   useEffect(async () => {
     const q = query(collection(db, "friends", authentication.currentUser.uid, "userFriends"));
-    getDocs(q)
-        .then((snapshot) => {
-          let users = snapshot.docs.map(doc => {
-              const id = doc.id 
-              return id; 
-          }); 
-          setUserFriends(users);
-          console.log(users);
-        })
+    const querySnap = await getDocs(q);
+    let users = [];
+    querySnap.forEach((doc) => {
+      const id = doc.id;
+      users.push(id);
+    })
+    setUserFriends(users);
+    // getDocs(q)
+    //     .then((snapshot) => {
+    //       let users = snapshot.docs.map(doc => {
+    //           const id = doc.id 
+    //           return id; 
+    //       }); 
+    //       setUserFriends(users);
+    //       console.log(users);
+    //     })
    }, [lastFriendAdded])
 
 
@@ -76,12 +83,12 @@ export default function Add() {
 
   return (
 
-    <View style={styles.container}>
+    <View style={styles.container} testID='addPage'>
 
       {/* Search icon and feature  */}
 
       <View style={styles.formContent}>
-        <View style={styles.inputContainer}>
+        <View style={styles.inputContainer} testID='searchBar'>
           <Image
             style={[styles.icon, styles.inputIcon]}
             source={{ uri: 'https://img.icons8.com/color/70/000000/search.png' }}
@@ -140,9 +147,10 @@ export default function Add() {
               
                 </View>
 
-                { (userFriends.indexOf(item.userID) > -1) ? 
+                {/* { (userFriends.indexOf(item.userID) > -1) ? 
                   (
                     <TouchableOpacity
+                      testID='addButton'
                       style={{
                         backgroundColor: '#d3d3d3',
                         ...styles.button,
@@ -156,12 +164,20 @@ export default function Add() {
                     :
                   ( 
                     <TouchableOpacity
+                        testID='addButton'
                         style={[styles.button, styles.profile]}
                         onPress={() => onAddPressed(item)}>
                         <Text style={styles.buttonText}>Add</Text>
                     </TouchableOpacity>
                   )
-                }
+                } */}
+
+                    <TouchableOpacity
+                        testID='addButton'
+                        style={[styles.button, styles.profile]}
+                        onPress={() => onAddPressed(item)}>
+                        <Text style={styles.buttonText}>Add</Text>
+                    </TouchableOpacity>
               </TouchableOpacity>
             )
           } 

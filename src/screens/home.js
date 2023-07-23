@@ -5,70 +5,44 @@ import { authentication, db } from '../../config'
 import { ListItem } from '../components/tasks/listItem'
 import { useFocusEffect } from '@react-navigation/native'
 import { useCallback } from 'react'
+import { signOut } from 'firebase/auth'
 
 export default function Home({navigation}) {
   const [users, setUsers] = useState([]);
 
   const logoutUser = async () => {
-    authentication.signOut()
-    .then(() => {
-      navigation.replace('Login')
-    })
-  }
- 
-  const getUsers =  () => {
-    const docsRef = collection(db, 'focusSession', authentication.currentUser.uid, 'partners');
-    const q =  query(docsRef, where('active', '==', true));
-    const docsSnap = onSnapshot(q, (onSnap) => {
-      let data = [];
-      onSnap.docs.forEach(async user => {
-        data.push({...user.data()})
-        setUsers(data)      
+    signOut(authentication)
+      .then(() => {
+        navigation.navigate('Login')
       })
-    })
   }
 
-  const fetchUsers = () => new Promise((resolve, reject) => {
-    // const q = query(collection(db, "evidence", otherUserID, "images"), where("partner", "==", authentication.currentUser.uid));
-    // getDocs(q)
-    //    .then((snapshot) => {
-    //      let evidence = snapshot.docs.map(doc => {
-    //          const data = doc.data(); 
-    //          const id = doc.id; 
-    //          return { id, ...data }
-    //      });
-    //      resolve(evidence);
-    //    })
-    //    .catch(() => reject())
+
+  const fetchUsers = () => new Promise(async (resolve) => {
 
     const docsRef = collection(db, 'focusSession', authentication.currentUser.uid, 'partners');
     const q =  query(docsRef, where('active', '==', true));
-    getDocs(q)
-       .then((snapshot) => {
-         let evidence = snapshot.docs.map(doc => {
-             const data = doc.data(); 
-             const id = doc.id; 
-             return { id, ...data }
-         });
-         resolve(evidence);
-         console.log(evidence);
-       })
-       .catch(() => reject())
+    const querySnap = await getDocs(q);
+    let users = [];
+    querySnap.forEach((doc) => {
+      const data = doc.data();
+      const id = doc.id;
+      users.push({ id, ...data });
+    })
+    resolve(users);
 
   })
 
-  useFocusEffect(
-    useCallback(() => {
-      fetchUsers()
-        .then(setUsers)
-    }, [])
-  )
+  useEffect(() => {
+    fetchUsers()
+      .then(setUsers);
+  })
   
 
   return (
-    <View style={styles.container}>
+    <View style={styles.container} testID='home'>
     <>
-      <TouchableOpacity onPress={logoutUser}>
+      <TouchableOpacity onPress={logoutUser} testID='logoutButton'>
           <View style={styles.button}>
               <Text style={styles.buttonText}>Logout</Text>
           </View>
@@ -84,11 +58,19 @@ export default function Home({navigation}) {
       renderItem={({item}) => 
           {
               return (
-                <ListItem 
+
+                // <TouchableOpacity 
+                //   testID='tasksButton'
+                //   onPress={() => navigation.navigate('Task', {name:item.name, uid:item.userID, userAvatar:item.photoURL, email: item.email, matched: item.matched})}
+                // >
+                  <ListItem 
                   onPress={() => navigation.navigate('Task', {name:item.name, uid:item.userID, userAvatar:item.photoURL, email: item.email, matched: item.matched})}
                   title={item.name}
                   image={item.photoURL}
                   />
+
+                // </TouchableOpacity>
+                
               )
           }}
       />

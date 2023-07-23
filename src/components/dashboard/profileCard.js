@@ -11,26 +11,14 @@ import { doc, getDoc, get, connectFirestoreEmulator} from "firebase/firestore";
 
 import { useFocusEffect } from '@react-navigation/native';
 
-const ProfileCard = ({ nav }) => {
+const ProfileCard = ({navigation}) => {
 
     const editProfile = () => {
-        nav.navigate('Edit Profile');
+        navigation.navigate('Edit Profile');
     }
 
     const [image, setImage] = useState(null);
 
-    // const pickImage = async () => {
-    //     let result = await ImagePicker.launchImageLibraryAsync({
-    //     mediaTypes: ImagePicker.MediaTypeOptions.All,
-    //     allowsEditing: true,
-    //     aspect: [4, 3],
-    //     quality: 0
-    //     });
-
-    //     if (!result.canceled) {
-    //     setImage(result.assets[0].uri);
-    //     } 
-    // };
 
     const[name, setName] = useState('')
     const[major, setMajor] = useState('')
@@ -43,16 +31,22 @@ const ProfileCard = ({ nav }) => {
 
     useFocusEffect(
         useCallback(() => {
-            getDoc(docRef)
-                .then((doc) => {
-                    setName(doc.get('name'))
-                    setMajor(doc.get('major'))
-                    setYear(doc.get('year'))
-                    setGender(doc.get('gender'))
-                    setPhotoURL(doc.get('photoURL'))  
-                    //console.log(photoURL)
-                    //console.log(Date.now())
-                })    
+            const docSnap = getDoc(docRef);
+            setName(docSnap.get('name'));
+            setMajor(docSnap.get('major'));
+            setYear(docSnap.get('year'));
+            setGender(docSnap.get('gender'));
+            setPhotoURL(docSnap.get('photoURL'));
+            // getDoc(docRef)
+            //     .then((doc) => {
+            //         setName(doc.get('name'))
+            //         setMajor(doc.get('major'))
+            //         setYear(doc.get('year'))
+            //         setGender(doc.get('gender'))
+            //         setPhotoURL(doc.get('photoURL'))  
+            //         //console.log(photoURL)
+            //         //console.log(Date.now())
+            //     })    
          }, [])
     )
      
@@ -90,7 +84,7 @@ const ProfileCard = ({ nav }) => {
                     borderRadius: 90 /2,
                    
                 }}>
-                    <TouchableOpacity >
+                    <TouchableOpacity testID='profileImage'>
                         <FontAwesome name='user-circle-o' size={75} color='#007788' />
                         
                         <Image source={{uri: photoURL}} style={{
@@ -117,7 +111,7 @@ const ProfileCard = ({ nav }) => {
                         justifyContent: 'space-between',
                         alignItems: 'center'
                     }}>
-                        <View style={{flexDirection: 'column'}}>
+                        <View style={{flexDirection: 'column'}} testID='name'>
                             <Text style={{
                                 fontWeight: 'bold',
                                 fontSize: 22,
@@ -129,7 +123,7 @@ const ProfileCard = ({ nav }) => {
                         <View style={{
                             marginRight: 12
                         }}>
-                            <TouchableOpacity onPress={editProfile}>
+                            <TouchableOpacity onPress={editProfile} testID='editProfileButton'>
                                 <Feather name='edit' size={20} color={'#007788'} />
                             </TouchableOpacity>
                             
@@ -160,7 +154,8 @@ const ProfileCard = ({ nav }) => {
                     justifyContent: 'center',
                     alignItems: 'center',
                     paddingRight: 15,
-                    left: 9 }}>
+                    left: 9 }}
+                    testID='major'>
                         <Text style={styles.caption}>{major}</Text> 
                     </View>
 
@@ -170,7 +165,8 @@ const ProfileCard = ({ nav }) => {
                         justifyContent: 'center',
                         alignItems: 'center',
                         paddingHorizontal: 20,
-                    }}>
+                    }}
+                    testID='year'>
                         <Text style={styles.caption}>{year}</Text> 
                     </View>
 
@@ -181,7 +177,8 @@ const ProfileCard = ({ nav }) => {
                         alignItems: 'center',
                         paddingHorizontal: 20,
                         
-                    }}>
+                    }}
+                    testID='gender'>
                         <Text style={styles.caption}>{gender}</Text> 
                     </View>
 
@@ -197,7 +194,7 @@ const ProfileCard = ({ nav }) => {
                 flex: 1,
                 marginTop: -6
             }}>
-                <ProgressBar navigation={nav}/>
+                <ProgressBar navigation={navigation}/>
 
             </View>
 

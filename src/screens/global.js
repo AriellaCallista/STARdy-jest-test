@@ -29,22 +29,30 @@ const Global = () => {
     const [global, setGlobal] = useState([]);
     const globalQuery = query(globalRef, orderBy("xp"), limit(20));
 
-    useEffect(() => {
-            getDocs(globalQuery)
-            .then((snapshot) => {
-              let users = snapshot.docs.map(doc => {
-                  const data = doc.data(); 
-                  const id = doc.id; 
-                  return { id, ...data }
-              }); 
-              setGlobal(users);
-              //console.log(users);
-            })
+    useEffect(async () => {
+        const querySnapshot = await getDocs(globalQuery);
+        let users = [];
+        querySnapshot.forEach((doc) => {
+            const data = doc.data();
+            const id = doc.id;
+            users.push({id, ...data});
+        })
+        setGlobal(users);
+            // getDocs(globalQuery)
+            // .then((snapshot) => {
+            //   let users = snapshot.docs.map(doc => {
+            //       const data = doc.data(); 
+            //       const id = doc.id; 
+            //       return { id, ...data }
+            //   }); 
+            //   setGlobal(users);
+            //   //console.log(users);
+            // })
         
     },[global])
 
   return (
-    <View style={styles.container}>
+    <View style={styles.container} testID='global'>
         <FlatList 
             keyExtractor={(item) => item.id}
             data={global}

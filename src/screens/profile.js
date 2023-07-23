@@ -1,14 +1,14 @@
-// 
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, TextInput, Button, Image, TouchableOpacity, Alert, AppState, ActivityIndicator} from 'react-native';
+import { StyleSheet, Text, View, TextInput, Button, Image, TouchableOpacity, Alert, AppState} from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Feather } from '@expo/vector-icons';
 import { saveUserProfileImage } from '../services/user';
+import RNPickerSelect from "react-native-picker-select";
 import { onAuthStateChanged } from 'firebase/auth';
+import { authentication, db } from '../../config';
 import { doc, setDoc, addDoc, collection, getDoc } from "firebase/firestore"; 
-import { db } from '../../config';
-import { authentication } from '../../config';
 import { submitUserData } from '../api/firestore'
+
 
 export default function Profile({navigation}) {
 
@@ -22,13 +22,6 @@ export default function Profile({navigation}) {
 
   //online portion 
   const [appState, setAppState] = useState(AppState.currentState);
-
-  // // useEffect(() => {
-  // //   AppState.addEventListener('change', handleAppStateChange);
-  // //   return () => {
-  // //     AppState.removeEventListener('change', handleAppStateChange);
-  // //   };
-  // // }, []);
 
   const handleAppStateChange = (nextAppState) => {
     console.log('App State: ' + nextAppState);
@@ -49,34 +42,11 @@ export default function Profile({navigation}) {
     }
   };
 
-  // // initialize user data
-  // const pressHandler = () => {
-  //   setDoc(doc(db, "users", authentication.currentUser.email), {
-  //     name: name,
-  //     gender: gender,
-  //     major: major,
-  //     year: year,
-  //     userID: authentication.currentUser.uid,
-  //     matched: false,
-  //     email: authentication.currentUser.email,
-  //     start: null,
-  //     xp: 200,
-  //     appState: appState, 
-  //   }, {merge: true}).then(() => {
-  //     // data saved successfully
-  //     console.log('data submitted');
-  //   }).catch((error) => {
-  //     //the write failed
-  //     console.log(error)
-  //   });
-  //   navigation.navigate('Main Tab');
-  // }
-
   const onSubmitPressed = () => {
     submitUserData(navigation, name, gender, major, year, appState)
   }
 
-  // upload profile image
+  // // upload profile image
   const chooseImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -85,181 +55,169 @@ export default function Profile({navigation}) {
       quality: 1
     })
 
-    //console.log(result.assets[0].uri);
+    console.log(result.assets[0].uri);
 
     if (!result.canceled) {
-      setIsLoading(true);
+      setIsLoading(true)
       // save photo to storage and generate downloadURL to be saved in firestore
      saveUserProfileImage(result.assets[0].uri)
       .then((date) => {
-        setLastPhotoUpdatedAt(date);
-        setIsLoading(false);
+        setLastPhotoUpdatedAt(date)
+        setIsLoading(false)
       })
     }
   }
 
-    // update photoURL
-    useEffect(() => {
+  // update photoURL
+  useEffect(() => {
       onAuthStateChanged(authentication, (user) => {
         if (user) {
           const docRef = doc(db, "users", authentication.currentUser.uid);
-          getDoc(docRef)
-          .then((doc) => {
-              setPhotoURL(doc.get('photoURL'))  
-              console.log(photoURL)
-          }) 
+          const docSnap = getDoc(docRef);
+          setPhotoURL(docSnap.get('photoURL'));
+          // getDoc(docRef)
+          // .then((doc) => {
+          //     setPhotoURL(doc.get('photoURL'))  
+          //     console.log(photoURL)
+          // }) 
           //console.log('auth ' + authentication.currentUser)
         } else {
           console.log('not signed in')
         }
       })
-    }, [lastPhotoUpdatedAt])
+  }, [lastPhotoUpdatedAt])
 
-return (
+  return (
 
-  <View style={styles.container}>
+    <View style={styles.container}>
 
-    <View style={styles.parent}>
-      <View style={styles.child}>
-          <TouchableOpacity 
-          style={{
-            alignItems: 'center',
-            justifyContent: 'center',
-            marginTop: -10,}}
-          onPress={chooseImage}  
-        >
-          {/* <View style={{
-            flexDirection: 'column',
-            justifyContent: 'center',
-            ...styles.logo
-          }}> */}
-          { photoURL != null ? 
-            <Image
+      <View style={styles.parent}>
+        <View style={styles.child}>
+            <TouchableOpacity 
             style={{
-              //flexDirection: 'column',
-              //justifyContent: 'center',
-              position: 'absolute',
-              ...styles.logo}}  
-            source={{ uri: photoURL }} />
-            : <View style={{...styles.logo, position: 'absolute'}}>
-              </View>}
-          
-            {/* <Text style={{
-              color: 'white',
-              fontSize: 15
-            }}>Upload Image</Text> */}
-            <View style={styles.imageOverlay} />
-
-            {isLoading
-            ? <ActivityIndicator color='#007788'/> 
-            : <Feather name='camera' size={26} color='white' />
-            }
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginTop: -10,}}
+            onPress={chooseImage}  
+          >
+            {/* <View style={{
+              flexDirection: 'column',
+              justifyContent: 'center',
+              ...styles.logo
+            }}> */}
+            { photoURL != null ? 
+              <Image
+              style={{
+                //flexDirection: 'column',
+                //justifyContent: 'center',
+                position: 'absolute',
+                ...styles.logo}}  
+              source={{ uri: photoURL }} />
+              : <View style={{...styles.logo, position: 'absolute'}}>
+                </View>}
             
-          {/* </View> */}
-          {/* <FontAwesome name='user-circle-o' size={90} color='#007788' />   */}
-        </TouchableOpacity>
+              {/* <Text style={{
+                color: 'white',
+                fontSize: 15
+              }}>Upload Image</Text> */}
+              <View style={styles.imageOverlay} />
+              <Feather name='camera' size={26} color='white' />
+            {/* </View> */}
+            {/* <FontAwesome name='user-circle-o' size={90} color='#007788' />   */}
+          </TouchableOpacity>
 
-      </View>
-    </View>
-
-    {/* <View style={{
-      height: 
-    }}>
-
-    </View> */}
-
-    
-
-  
-
-    <View style={{
-      top: "0%"
-    }}>
-      <Text style={{
-        position: 'relative',
-        left: 20,
-        top: 10
-      }}>Name</Text>
-      <TextInput 
-        placeholder='e.g. John Doe' 
-        value={name}
-        style={styles.input}
-        onChangeText={(value) => setName(value)} />
-
-     
-      
-
-      <Text style={{
-        position: 'relative',
-        left: 20,
-        top: 10
-      }}>Gender</Text>
-
-      <TextInput 
-        placeholder='e.g. F/M/NIL' 
-        value={gender}
-        style={styles.input}
-        onChangeText={(value) => setGender(value)} />
-
-      {/* <RNPickerSelect
-      useNativeAndroidPickerStyle={false}
-      placeholder={{ label: "Select your gender", value: null}}
-              onValueChange={(value) => setGender(value)}
-              items={[
-            { label: "F", value: "F" },
-            { label: "M", value: "M" },
-            { label: "NIL", value: "NIL" },
-             ]}
-         style={pickerSelectStyles}
-      />  */}
-
-
-      <Text style={{
-        position: 'relative',
-        left: 20,
-        top: 10
-      }}>Major</Text>
-      <TextInput 
-        placeholder='e.g. Science (no short form)' 
-        value={major}
-        style={styles.input}
-        onChangeText={(value) => setMajor(value)} />
-
-      <Text style={{
-        position: 'relative',
-        left: 20,
-        top: 10
-      }}>Year</Text> 
-       <TextInput 
-        placeholder='e.g. 1' 
-        value={year}
-        style={styles.input}
-        onChangeText={(value) => setYear(value)} />
-
-
-      {/* <RNPickerSelect
-      useNativeAndroidPickerStyle={false}
-      placeholder={{ label: "Select your year of study", value: null}}
-                onValueChange={(value) => setYear(value)}
-                items={[
-                    { label: "1", value: "1" },
-                    { label: "2", value: "2" },
-                    { label: "3", value: "3" },
-                    { label: "4", value: "4" },
-                    { label: "5", value: "5" },
-                    { label: "6 and above", value: "6 and above" },
-                ]}
-        style={pickerSelectStyles}
-      /> */}
-
-      <TouchableOpacity onPress={onSubmitPressed}>
-        <View style={styles.button}>
-          <Text style={styles.buttonText}>Submit</Text>
         </View>
-      </TouchableOpacity>
+      </View>
+
+      <View style={{
+        top: "0%"
+      }}>
+        <Text style={{
+          position: 'relative',
+          left: 20,
+          top: 10
+        }}>Name</Text>
+        <TextInput 
+          placeholder='e.g. John Doe' 
+          value={name}
+          style={styles.input}
+          onChangeText={(value) => setName(value)} />
+
+      
+        {/* <TextInput 
+          placeholder='e.g. F/M/NIL' 
+          value={gender}
+          style={styles.input}
+          onChangeText={(value) => setGender(value)} /> */}
+
+        <Text style={{
+          position: 'relative',
+          left: 20,
+          top: 10
+        }}>Gender</Text>
+
+        <RNPickerSelect
+        useNativeAndroidPickerStyle={false}
+        placeholder={{ label: "Select your gender", value: null}}
+                onValueChange={(value) => setGender(value)}
+                items={[
+              { label: "F", value: "F" },
+              { label: "M", value: "M" },
+              { label: "NIL", value: "NIL" },
+              ]}
+        style={pickerSelectStyles}
+        touchableWrapperProps={{testID: 'genderPicker'}}
+        /> 
+
+
+        <Text style={{
+          position: 'relative',
+          left: 20,
+          top: 10
+        }}>Major</Text>
+
+        <TextInput 
+          placeholder='e.g. Science (no short form)' 
+          value={major}
+          style={styles.input}
+          onChangeText={(value) => setMajor(value)} />
+
+        
+        {/* <TextInput 
+          placeholder='e.g. Year 1' 
+          value={year}
+          style={styles.input}
+          onChangeText={(value) => setYear(value)} /> */}
+
+          
+        <Text style={{
+          position: 'relative',
+          left: 20,
+          top: 10
+        }}>Year</Text> 
+        <RNPickerSelect
+        useNativeAndroidPickerStyle={false}
+        placeholder={{ label: "Select your year of study", value: null}}
+                  onValueChange={(value) => setYear(value)}
+                  items={[
+                      { label: "1", value: "1" },
+                      { label: "2", value: "2" },
+                      { label: "3", value: "3" },
+                      { label: "4", value: "4" },
+                      { label: "5", value: "5" },
+                      { label: "6 and above", value: "6 and above" },
+                  ]}
+          style={pickerSelectStyles}
+        />
+
+        <TouchableOpacity onPress={onSubmitPressed} testID='onboardingButton'>
+          <View style={styles.button}>
+            <Text style={styles.buttonText}>Submit</Text>
+          </View>
+        </TouchableOpacity>
+      </View>  
     </View>
-  </View>
-);
+  );
 }
 
 

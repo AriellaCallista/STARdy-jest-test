@@ -13,7 +13,8 @@ jest.mock("firebase/auth", () => {
         getAuth: jest.fn(() => Promise.resolve(true)).mockReturnValue({ currentUser: { uid: 'uid', email: 'test@gmail.com'}}),
         createUserWithEmailAndPassword: jest.fn(() => Promise.resolve(true)),
         signInWithEmailAndPassword: jest.fn(() => Promise.resolve(true)),
-        onAuthStateChanged: jest.fn()
+        onAuthStateChanged: jest.fn(),
+        signOut: jest.fn(() => Promise.resolve())
     }
 })
   
@@ -93,6 +94,7 @@ jest.mock("firebase/firestore", () => {
       map: jest.fn(),
       where: jest.fn(),
       deleteDoc: jest.fn(),
+      updateDoc: jest.fn()
      
     }
 })

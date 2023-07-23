@@ -16,12 +16,12 @@ import { db, authentication } from '../../../config';
 import { doc, getDoc, getDocs, query, collection, setDoc} from "firebase/firestore";
 import { queryUsersByMajorAndYear, request } from '../../api/firestore';
 
-export default function Random() {
+export default function Random({users, userRequesting}) {
 
-  const [users, setUsers] = useState([])
+  //const [users, setUsers] = useState([])
   const[major, setMajor] = useState('')
   const[year, setYear] = useState('')
-  const [userRequesting, setUserRequesting] = useState([]);
+  // const [userRequesting, setUserRequesting] = useState([]);
   const [requested, setRequested] = useState(null);
   const [currUserName, setCurrUserName] = useState(null);
   const [currUserGender, setCurrUserGender] = useState(null);
@@ -31,78 +31,78 @@ export default function Random() {
   const [currUserPhotoURL, setCurrUserPhotoURL] = useState(null);
 
   // filter 
-  useEffect(() => {
-    queryUsersByMajorAndYear(major, year)
-      .then(setUsers)
-  },[major, year])
-
   // useEffect(() => {
-  //   const q = query(collection(db, "requesting", authentication.currentUser.uid, "requestingUsers"));
-  //   getDocs(q)
-  //     .then((snapshot) => {
-  //       let users = snapshot.docs.map(doc => {
-  //         console.log('id: ' + doc.id);
-  //         const id = doc.id 
-  //         return id; 
-  //       }); 
-  //     setUserRequesting(users);
-      
-  //   })
-  // }, [requested])
+  //   queryUsersByMajorAndYear(major, year)
+  //     .then(setUsers)
+  // },[major, year])
+
   useFocusEffect(
-    useCallback(() => {
+    useCallback(async () => {
       const docRef = doc(db, "users", authentication.currentUser.uid);
-      getDoc(docRef)
-        .then((doc) => {
-          setCurrUserName(doc.get('name'))
-          setCurrUserGender(doc.get('gender'))
-          setCurrUserMajor(doc.get('major'))
-          setCurrUserYear(doc.get('year'))
-          setCurrUserUID(doc.get('userID'))
-          setCurrUserPhotoURL(doc.get('photoURL'))
-        })
+      const docSnap = await getDoc(docRef);
+      setCurrUserName(docSnap.get('name'));
+      setCurrUserGender(docSnap.get('gender'));
+      setCurrUserMajor(docSnap.get('major'));
+      setCurrUserYear(docSnap.get('year'));
+      setCurrUserUID(docSnap.get('userID'));
+      setCurrUserPhotoURL(docSnap.get('photoURL'));
 
     }, [])
   )
 
-  useFocusEffect(
-    useCallback(() => {
-      const q = query(collection(db, "requesting", authentication.currentUser.uid, "requestingUsers"));
-      getDocs(q)
-      .then((snapshot) => {
-        let users = snapshot.docs.map(doc => {
-          console.log('id: ' + doc.id);
-          const id = doc.id 
-          return id; 
-        }); 
-      setUserRequesting(users);
+  // useFocusEffect(
+  //   useCallback(async () => {
+  //     const q = query(collection(db, "requesting", authentication.currentUser.uid, "requestingUsers"));
+  //     const querySnapshot = await getDocs(q);
+  //     let users = [];
+  //     querySnapshot.forEach((doc) => {
+  //       users.push(doc.id);
+        
+  //     })
+  //     setUserRequesting(users);
+  //   //   getDocs(q)
+  //   //   .then((snapshot) => {
+  //   //     let users = snapshot.docs.map(doc => {
+  //   //       console.log('id: ' + doc.id);
+  //   //       const id = doc.id 
+  //   //       return id; 
+  //   //     }); 
+  //   //   setUserRequesting(users);
       
-    })
-     }, [requested])
-  )
+  //   // })
+  //    }, [requested])
+  // )
 
   // retrieve and update
   useFocusEffect(
-    useCallback(() => {
+    useCallback(async () => {
       const docRef = doc(db, "users", authentication.currentUser.uid);
-      getDoc(docRef)
-      .then((doc) => {
-          setMajor(doc.get('major'))
-          setYear(doc.get('year'))
-      })
+      const docSnap = await getDoc(docRef);
+      setMajor(docSnap.get('major'));
+      setYear(docSnap.get('year'));
+      // getDoc(docRef)
+      // .then((doc) => {
+      //     setMajor(doc.get('major'))
+      //     setYear(doc.get('year'))
+      // })
      }, [])
   )
 
   const onRequestPressed = (item, currUserName, currUserGender, currUserYear, currUserMajor, currUserPhotoURL, currUserUID) => {
     request(item, currUserName, currUserGender, currUserYear, currUserMajor, currUserPhotoURL, currUserUID);
     setRequested(item.id);
+    Alert.alert("Request sent")
   }
   
+  const noRequest = () => {
+    Alert.alert("Already requested")
+  }
+
   //Frontend for Random 
 
   return (
 
-    <View style={styles.container}>
+    <View style={styles.container} testID='randomList'>
 
       <FlatList
         numColumns={1}
@@ -167,13 +167,17 @@ export default function Random() {
 
                       
                     }}
+                    onPress={noRequest}
+                    testID='requestingButton'
                     >
-                    <Text style={{color: 'grey', fontWeight: 'bold'}}>Requesting</Text>
+                    <Text 
+                      style={{color: 'grey', fontWeight: 'bold'}}>Requesting</Text>
                   </TouchableOpacity>)
                   :
                   ( <TouchableOpacity
                       style={[styles.button, styles.profile]}
-                      onPress={() => onRequestPressed(item, currUserName, currUserGender, currUserYear, currUserMajor, currUserPhotoURL, currUserUID)}>
+                      onPress={() => onRequestPressed(item, currUserName, currUserGender, currUserYear, currUserMajor, currUserPhotoURL, currUserUID)}
+                      testID='requestButton'>
                       <Text style={styles.buttonText}>Request</Text>
                     </TouchableOpacity>
                   )}

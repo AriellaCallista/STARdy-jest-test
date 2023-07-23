@@ -18,17 +18,25 @@ const Friends = () => {
 
     const [friends, setFriends] = useState([])
 
-    useEffect(() => {
-        getDocs(friendsQuery)
-            .then((snapshot) => {
-              let users = snapshot.docs.map(doc => {
-                  const data = doc.data(); 
-                  const id = doc.id; 
-                  return { id, ...data }
-              }); 
-              setFriends(users);
-              console.log(users);
-            })
+    useEffect(async () => {
+        const querySnapshot = await getDocs(friendsQuery);
+        let users = [];
+        querySnapshot.forEach((doc) => {
+            const data = doc.data();
+            const id = doc.id;
+            users.push({id, ...data});
+        })
+        setFriends(users);
+        // getDocs(friendsQuery)
+        //     .then((snapshot) => {
+        //       let users = snapshot.docs.map(doc => {
+        //           const data = doc.data(); 
+        //           const id = doc.id; 
+        //           return { id, ...data }
+        //       }); 
+        //       setFriends(users);
+        //       console.log(users);
+        //     })
       },[])
 
     const [top10, setTop10] = useState([
@@ -38,7 +46,7 @@ const Friends = () => {
     ]);
 
   return (
-    <View style={styles.container}>
+    <View style={styles.container} testID='friends'>
         <FlatList 
             keyExtractor={(item) => item.id}
             data={top10}

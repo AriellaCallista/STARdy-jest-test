@@ -35,20 +35,22 @@ const Verify = ({route, navigation}) => {
     }
 
     // fetch user evidence data
-    useEffect(() => {
+    useEffect(async () => {
         fetchUserEvidence(otherUserID)
           .then(setEvidence);
 
         // get start date
         const docRef = doc(db, "focusSession", authentication.currentUser.uid, "partners", otherUserID);
-        getDoc(docRef)
-            .then((doc) => {
-                const s = doc.get('start')
-                console.log(doc.get('start'))
-                setStartDate(s)
-                console.log('start: ' + startDate)
+        const docSnap = await getDoc(docRef);
+        setStartDate(docSnap.get('start'));
+        // getDoc(docRef)
+        //     .then((doc) => {
+        //         const s = doc.get('start')
+        //         console.log(doc.get('start'))
+        //         setStartDate(s)
+        //         console.log('start: ' + startDate)
               
-              }) 
+        //       }) 
     },[])
 
   // front end
@@ -89,13 +91,13 @@ const Verify = ({route, navigation}) => {
     </View>
 
     <View style={styles.section}>
-        <TouchableOpacity style={styles.yesbutton} onPress={onYesPressed}>
+        <TouchableOpacity style={styles.yesbutton} onPress={onYesPressed} testID='verifyYes'>
             <Text style={styles.buttonText}>Yes</Text>
         </TouchableOpacity>
     </View>
 
     <View style={styles.section}>
-      <TouchableOpacity style={styles.nobutton} onPress={onNoPressed} >
+      <TouchableOpacity style={styles.nobutton} onPress={onNoPressed} testID='verifyNo'>
             <Text style={styles.buttonText}>No</Text>
         </TouchableOpacity>
     </View>

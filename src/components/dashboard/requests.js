@@ -9,11 +9,11 @@ import { authentication } from '../../../config';
 
 import { doc, getDocs, collection, updateDoc, getDoc, setDoc, deleteDoc} from 'firebase/firestore';
 import { db } from '../../../config';
-import { useNavigation } from '@react-navigation/native';
 import { Alert } from 'react-native';
 
 import { acceptRequest } from '../../api/firestore';
 
+import { Platform } from 'react-native';
 
 {/* //notification portion  */}
 import * as Device from 'expo-device';
@@ -28,71 +28,77 @@ Notifications.setNotificationHandler({
         }),
     });
 
-const Requests = () => {
+const Requests = ({requests, currUserMatched}) => {
     
     //notification 
-    const [expoPushToken, setExpoPushToken] = useState('');
-    const [notification, setNotification] = useState(false);
-    const notificationListener = useRef();
-    const responseListener = useRef();
+    // const [expoPushToken, setExpoPushToken] = useState('');
+    // const [notification, setNotification] = useState(false);
+    // const notificationListener = useRef();
+    // const responseListener = useRef();
   
-    useEffect(() => {
-      registerForPushNotificationsAsync().then(token => setExpoPushToken(token));
+    // useEffect(() => {
+    //   registerForPushNotificationsAsync().then(token => setExpoPushToken(token));
   
-      notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
-        setNotification(notification);
-      });
+    //   notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
+    //     setNotification(notification);
+    //   });
   
-      responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
-        console.log(response);
-      });
+    //   responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
+    //     console.log(response);
+    //   });
   
-      return () => {
-        Notifications.removeNotificationSubscription(notificationListener.current);
-        Notifications.removeNotificationSubscription(responseListener.current);
-      };
-    }, []);
+    //   return () => {
+    //     Notifications.removeNotificationSubscription(notificationListener.current);
+    //     Notifications.removeNotificationSubscription(responseListener.current);
+    //   };
+    // }, []);
    //notification 
 
-   const [requests, setRequests] = useState([]);
+//    const [requests, setRequests] = useState([]);
    const [accepted, setAccepted] = useState(false);
-   const [currUserMatched, setCurrUserMatched] = useState(null);
+//    const [currUserMatched, setCurrUserMatched] = useState(null);
    const [startDate, setStartDate] = useState(null);
    const [currUserName, setCurrUserName] = useState('');
    const [currUserPhotoURL, setCurrUserPhotoURL] = useState('');
    const [currUserID, setCurrUserID] = useState('');
    const [currUserEmail, setCurrUserEmail] = useState('');
 
-   const navigation = useNavigation();
 
    
    
-    useEffect(() => {
+    useEffect(async () => {
         const usersRef = doc(db, "users", authentication.currentUser.uid)
-        getDoc(usersRef)
-            .then((doc) => {
-                setCurrUserMatched(doc.get('matched'));
-                console.log(doc.get('name'));
-                setCurrUserName(doc.get('name'));
-                setCurrUserPhotoURL(doc.get('photoURL'));
-                setCurrUserID(doc.get('userID'));
-                setCurrUserEmail(doc.get('email'));
-                setCurrUserMatched(doc.get('matched'))
-            })
+        const docSnap = await getDoc(usersRef);
+        setCurrUserName(docSnap.get('name'));
+      //  setCurrUserMatched(docSnap.get('matched'));
+        setCurrUserID(docSnap.get('userID'));
+        setCurrUserEmail(docSnap.get('email'));
+        setCurrUserPhotoURL(docSnap.get('photoURL'));
+
+        // getDoc(usersRef)
+        //     .then((doc) => {
+        //         setCurrUserMatched(doc.get('matched'));
+        //         console.log(doc.get('name'));
+        //         setCurrUserName(doc.get('name'));
+        //         setCurrUserPhotoURL(doc.get('photoURL'));
+        //         setCurrUserID(doc.get('userID'));
+        //         setCurrUserEmail(doc.get('email'));
+        //         setCurrUserMatched(doc.get('matched'))
+        //     })
     }, [])
 
-    useFocusEffect(
-        useCallback(() => {
-            fetchUserRequests()
-            .then(setRequests)
+    // useFocusEffect(
+    //     useCallback(() => {
+    //         fetchUserRequests()
+    //         .then(setRequests)
 
-        }, [accepted])
-    )
+    //     }, [accepted])
+    // )
 
     const onAcceptRequest = async (item, currUserName, currUserEmail, currUserID, currUserPhotoURL, currUserMatched) => {
         await acceptRequest(item, currUserName, currUserEmail, currUserID, currUserPhotoURL, currUserMatched);
         setAccepted(item.id);
-        Alert.alert(`Your Focus Session with ${item.name} has started`, 
+        Alert.alert(`Your Focus Session has started`, 
         "Complete all of your tasks before the deadline!")
 
     }
@@ -110,7 +116,9 @@ const Requests = () => {
             paddingHorizontal: 6,
             //paddingVertical: 18,
             
-        }}>
+        }}
+        testID='request'>
+
             <View style={{
                 //backgroundColor: 'pink',
                 // flex: 1,
@@ -186,23 +194,34 @@ const Requests = () => {
 
                                 <View style={{marginLeft: 50}}>
                                     {currUserMatched == null
-                                    ? <TouchableOpacity onPress={() => onAcceptRequest(item, currUserName, currUserEmail, currUserID, currUserPhotoURL, currUserMatched)}>
+                                    ? <TouchableOpacity 
+                                        testID='acceptButton'
+                                        style={{
+                                            backgroundColor: '#007788'
+                                        }}
+                                        onPress={() => onAcceptRequest(item, currUserName, currUserEmail, currUserID, currUserPhotoURL, currUserMatched)}>
                                         <Text style={{
                                             textAlign: 'right', 
                                             fontWeight: 'bold',
                                             color: 'white',
-                                            backgroundColor: '#007788', 
+                                            //backgroundColor: '#007788', 
                                             padding: 8, 
                                             borderRadius: 8}}>Accept</Text>
                                     </TouchableOpacity>
-                                    :<TouchableOpacity onPress={sendAlert}>
+                                    :<TouchableOpacity
+                                        testID='noAcceptButton' 
+                                        onPress={sendAlert}
+                                        style={{
+                                            backgroundColor: 'grey'
+                                        }}>
                                         <Text style={{
+                                            
                                             textAlign: 'right', 
                                             fontWeight: 'bold',
                                             color: 'white',
-                                            backgroundColor: 'grey', 
+                                            //backgroundColor: 'grey', 
                                             padding: 8, 
-                                            borderRadius: 8}}>Accept</Text>
+                                            borderRadius: 8}}>Acceptn</Text>
                                     </TouchableOpacity>
                                     }
                                     
@@ -225,46 +244,46 @@ const Requests = () => {
 }
 
 
-async function schedulePushNotification() {
-    await Notifications.scheduleNotificationAsync({
-      content: {
-        title: "STARdy ⭐ You are matched",
-        body: '🌟 Your focus session today starts now and will end at 23:59✨',
-        data: { data: 'goes here' },
-      },
-      trigger: { seconds: 10 },
-    });
-  }
+// async function schedulePushNotification() {
+//     await Notifications.scheduleNotificationAsync({
+//       content: {
+//         title: "STARdy ⭐ You are matched",
+//         body: '🌟 Your focus session today starts now and will end at 23:59✨',
+//         data: { data: 'goes here' },
+//       },
+//       trigger: { seconds: 10 },
+//     });
+//   }
   
-  async function registerForPushNotificationsAsync() {
-    let token;
+//   async function registerForPushNotificationsAsync() {
+//     let token;
   
-    if (Platform.OS === 'android') {
-      await Notifications.setNotificationChannelAsync('default', {
-        name: 'default',
-        importance: Notifications.AndroidImportance.MAX,
-        vibrationPattern: [0, 250, 250, 250],
-        lightColor: '#FF231F7C',
-      });
-    }
+//     if (Platform.OS === 'android') {
+//       await Notifications.setNotificationChannelAsync('default', {
+//         name: 'default',
+//         importance: Notifications.AndroidImportance.MAX,
+//         vibrationPattern: [0, 250, 250, 250],
+//         lightColor: '#FF231F7C',
+//       });
+//     }
   
-    if (Device.isDevice) {
-      const { status: existingStatus } = await Notifications.getPermissionsAsync();
-      let finalStatus = existingStatus;
-      if (existingStatus !== 'granted') {
-        const { status } = await Notifications.requestPermissionsAsync();
-        finalStatus = status;
-      }
-      if (finalStatus !== 'granted') {
-        alert('Failed to get push token for push notification!');
-        return;
-      }
-      token = (await Notifications.getExpoPushTokenAsync()).data;
-      console.log(token);
-    } else {
-      alert('Must use physical device for Push Notifications');
-    }
-  }
+//     if (Device.isDevice) {
+//       const { status: existingStatus } = await Notifications.getPermissionsAsync();
+//       let finalStatus = existingStatus;
+//       if (existingStatus !== 'granted') {
+//         const { status } = await Notifications.requestPermissionsAsync();
+//         finalStatus = status;
+//       }
+//       if (finalStatus !== 'granted') {
+//         alert('Failed to get push token for push notification!');
+//         return;
+//       }
+//       token = (await Notifications.getExpoPushTokenAsync()).data;
+//       console.log(token);
+//     } else {
+//       Alert.alert('Must use physical device for Push Notifications');
+//     }
+//   }
   
 
 const styles=StyleSheet.create({

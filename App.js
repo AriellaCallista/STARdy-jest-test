@@ -3,6 +3,7 @@ import { useFonts } from 'expo-font';
 
 import Welcome from './src/screens/welcome';
 import Profile from './src/screens/profile';
+import OnboardingScreen from './src/screens/onboardingScreen';
 import MainTab from './src/navigation/mainTab';
 import Todo from './src/screens/todo';
 import Notes from './src/screens/notes';
@@ -20,7 +21,9 @@ import Chat from './src/screens/chat';
 import NoteDetail from './src/components/dashboard/notes/noteDetail';
 import { Feather } from '@expo/vector-icons';
 import NoteProvider from './src/context/noteProvider';
-
+import ProfileCard from './src/components/dashboard/profileCard';
+import Random from './src/components/sessionUsers/random';
+import Friends from './src/components/sessionUsers/friends';
 
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -65,12 +68,15 @@ export default function App() {
             <Stack.Screen name='Login' component={Login} options={{ headerShown: false }}/>
             <Stack.Screen name='Sign Up' component={SignUp} options={{ headerShown: false }}/>
             <Stack.Screen name='Profile' component={Profile} options={{ headerShown: false }}/>
+            <Stack.Screen name='OnboardingScreen' component={OnboardingScreen} options={{ headerShown: false }}/>
             <Stack.Screen name='Main Tab' component={MainTab} options={{ headerShown: false }}/>
             <Stack.Screen name='Notes' component={Notes} />
             <Stack.Screen name='NoteDetail' component={NoteDetail} />
             <Stack.Screen name='To Do List' component={Todo} />
             <Stack.Screen name='Encouragement Notes!' component={Encouragement} /> 
             <Stack.Screen name='Leaderboard' component={Leaderboard} /> 
+            <Stack.Screen name='Random' component={Random} /> 
+            <Stack.Screen name='Friends' component= {Friends} /> 
             <Stack.Screen name='Edit Profile' component={EditProfile} 
               options={({ navigation }) => ({
                 headerTitleStyle: {
@@ -98,6 +104,7 @@ export default function App() {
                     color='#f6f6f6' />
                 )
               })} /> 
+              <Stack.Screen name='Profile Card' component={ProfileCard} /> 
             {/* <Stack.Screen
                 name='Tasks'
                 component={Tasks}

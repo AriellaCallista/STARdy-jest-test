@@ -6,6 +6,7 @@ import {MaterialCommunityIcons} from "@expo/vector-icons"
 export function ListItem({title, subTitle, image, ImageComponent, onPress}) {
   return (
         <TouchableOpacity
+        testID='tasksButton'
         underlayColor='#333' 
         onPress={onPress}
         >

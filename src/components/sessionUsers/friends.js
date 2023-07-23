@@ -5,10 +5,7 @@ import {
   View,
   TouchableOpacity,
   Image,
-  Alert,
-  TextInput,
   FlatList,
-  AppState,
 } from 'react-native'
 
 import { useFocusEffect } from '@react-navigation/native';
@@ -18,11 +15,12 @@ import { db, authentication } from '../../../config';
 import { doc, getDocs, query, collection, setDoc, getDoc} from "firebase/firestore";
 import { fetchUserFriends, request } from '../../api/firestore';
 import { TouchableHighlight } from 'react-native-gesture-handler';
+import { Alert } from 'react-native';
 
-export default function Friends() {
+export default function Friends({users, userRequesting}) {
 
-  const [users, setUsers] = useState([]);
-  const [userRequesting, setUserRequesting] = useState([]); 
+  //const [users, setUsers] = useState([]);
+  // const [userRequesting, setUserRequesting] = useState([]); 
   const [requested, setRequested] = useState(null);
   const [currUserName, setCurrUserName] = useState(null);
   const [currUserGender, setCurrUserGender] = useState(null);
@@ -31,72 +29,54 @@ export default function Friends() {
   const [currUserUID, setCurrUserUID] = useState(null);
   const [currUserPhotoURL, setCurrUserPhotoURL] = useState(null);
 
-  //filter 
-  // useEffect(() => {
-  //   const q = query(collection(db, "requesting", authentication.currentUser.uid, "requestingUsers"));
-  //   getDocs(q)
-  //     .then((snapshot) => {
-  //       let users = snapshot.docs.map(doc => {
-  //         console.log('id: ' + doc.id);
-  //         const id = doc.id 
-  //         return id; 
-  //       }); 
+  // useFocusEffect(
+  //   useCallback(async () => {
+  //     const q = query(collection(db, "requesting", authentication.currentUser.uid, "requestingUsers"));
+  //     const querySnapshot = await getDocs(q);
+  //     let users = [];
+  //     querySnapshot.forEach((doc) => {
+  //       users.push(doc.data());
+  //     })
   //     setUserRequesting(users);
+  //    }, [requested]),
+  // )
+
+  // useFocusEffect(
+  //   useCallback(async() => {
+  //     const docRef = doc(db, "users", authentication.currentUser.uid);
+  //     const documentSnapshot = await getDoc(docRef);
+  //     setCurrUserName(documentSnapshot.get('name'));
+  //     setCurrUserGender(documentSnapshot.get('gender'));
+  //     setCurrUserMajor(documentSnapshot.get('major'));
+  //     setCurrUserYear(documentSnapshot.get('year'));
+  //     setCurrUserUID(documentSnapshot.get('userID'));
+  //     setCurrUserPhotoURL(documentSnapshot.get('photoURL'));
       
-  //   })
-  // },[requested])
-  useFocusEffect(
-    useCallback(() => {
-      const q = query(collection(db, "requesting", authentication.currentUser.uid, "requestingUsers"));
-      getDocs(q)
-      .then((snapshot) => {
-        let users = snapshot.docs.map(doc => {
-          console.log('id: ' + doc.id);
-          const id = doc.id 
-          return id; 
-        }); 
-      setUserRequesting(users);
-      
-    })
-     }, [requested]),
-  )
+  //   }, [])
+  // )
 
-  useFocusEffect(
-    useCallback(() => {
-      const docRef = doc(db, "users", authentication.currentUser.uid);
-      getDoc(docRef)
-        .then((doc) => {
-          setCurrUserName(doc.get('name'))
-          setCurrUserGender(doc.get('gender'))
-          setCurrUserMajor(doc.get('major'))
-          setCurrUserYear(doc.get('year'))
-          setCurrUserUID(doc.get('userID'))
-          setCurrUserPhotoURL(doc.get('photoURL'))
-        })
-
-    }, [])
-  )
-
-  // retrieve and update current user name
-  useFocusEffect(
-    useCallback(() => {
-      fetchUserFriends()
-      .then(setUsers)
-     }, [])
-  )
+  // useFocusEffect(
+  //   useCallback(() => {
+  //     fetchUserFriends()
+  //     .then(setUsers)
+  //    }, [])
+  // )
 
   const onRequestPressed = (item, currUserName, currUserGender, currUserYear, currUserMajor, currUserPhotoURL, currUserUID) => {
     request(item, currUserName, currUserGender, currUserYear, currUserMajor, currUserPhotoURL, currUserUID);
     setRequested(item.id);
+    Alert.alert("Request sent")
+  }
+
+  const noRequest = () => {
+    Alert.alert("Already requested")
   }
   
   //Frontend for Random 
 
   return (
 
-    
-
-    <View style={styles.container}>
+    <View style={styles.container} testID='friendList'>
 
       <FlatList
         numColumns={1}
@@ -105,9 +85,6 @@ export default function Friends() {
         extraData={users}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => {
-          // console.log(item.name + ' ' + userRequests.indexOf(item.id));
-          // console.log(userRequests);
-          //console.log('email' + item.id);
           // if user is noti the current user and user isn't already matched, flat list
           if (item.id != authentication.currentUser.email) {
             return (
@@ -152,20 +129,23 @@ export default function Friends() {
                 </View>
 
                 { (userRequesting.indexOf(item.id) > -1) ? (
-                  <TouchableHighlight
+                  <TouchableOpacity
                     style={{
                       backgroundColor: '#d3d3d3',
                       ...styles.button,
                       justifyContent: 'center',
                       alignItems: 'center',
                     }}
+                    onPress={noRequest}
+                    testID='requestingButton'
                     >
                     <Text style={{color: 'grey', fontWeight: 'bold'}}>Requesting</Text>
-                  </TouchableHighlight>)
+                  </TouchableOpacity>)
                   :
                   ( <TouchableOpacity
                       style={[styles.button, styles.profile]}
-                      onPress={() => onRequestPressed(item, currUserName, currUserGender, currUserYear, currUserMajor, currUserPhotoURL, currUserUID)}>
+                      onPress={() => onRequestPressed(item, currUserName, currUserGender, currUserYear, currUserMajor, currUserPhotoURL, currUserUID)}
+                      testID='requestButton'>
                       <Text style={styles.buttonText}>Request</Text>
                     </TouchableOpacity>
                   )}

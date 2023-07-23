@@ -21,6 +21,7 @@ export default function Profile({navigation}) {
   // initialize user data
   const onSubmitPressed = () => {
     saveChanges(navigation, name, gender, major, year)
+    navigation.navigate('Main Tab')
   }
 
 
@@ -46,11 +47,13 @@ export default function Profile({navigation}) {
     // update photoURL
     useEffect(() => {
       const docRef = doc(db, "users", authentication.currentUser.uid);
-      getDoc(docRef)
-      .then((doc) => {
-          setPhotoURL(doc.get('photoURL'))  
-          console.log(photoURL)
-      }) 
+      const docSnap = getDoc(docRef);
+      setPhotoURL(docSnap.get('photoURL'));
+      // getDoc(docRef)
+      // .then((doc) => {
+      //     setPhotoURL(doc.get('photoURL'))  
+      //     console.log(photoURL)
+      // }) 
   
     }, [lastPhotoUpdatedAt])
 
@@ -182,7 +185,7 @@ return (
         style={pickerSelectStyles}
       /> */}
 
-      <TouchableOpacity onPress={onSubmitPressed}>
+      <TouchableOpacity onPress={onSubmitPressed} testID='profileButton'>
         <View style={styles.button}>
           <Text style={styles.buttonText}>Submit</Text>
         </View>

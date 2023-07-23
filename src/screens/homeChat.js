@@ -1,32 +1,40 @@
 import { FlatList, StyleSheet, Text, View, Image, TouchableOpacity} from 'react-native'
 import React, { useEffect, useState } from 'react'
-import { collection, onSnapshot, where, query } from 'firebase/firestore'
+import { collection, onSnapshot, where, query, getDocs } from 'firebase/firestore'
 import { authentication, db } from '../../config'
 import { ListItem } from '../components/chat/listItem'
+import { signOut } from 'firebase/auth'
 
 export default function HomeChat({navigation}) {
   const [users, setUsers] = useState([]);
 
   const logoutUser = async () => {
-    authentication.signOut()
-    .then(() => {
-      navigation.replace('Login')
-    })
+    signOut(authentication)
+      .then(() => {
+        navigation.navigate('Login')
+      })
+    // navigation.navigate('Login')
   }
  
-  const getUsers =  () => {
+  const getUsers =  async () => {
     // const docsRef = collection(db, 'users');
     // const q =  query(docsRef, where('userUID', '!=', authentication?.currentUser?.uid ));
     const q = query(collection(db, 'focusSession', authentication.currentUser.email, 'partners'));
-    const docsSnap = onSnapshot(q, (onSnap) => {
-      let data = [];
-      onSnap.docs.forEach(user => {
-        data.push({...user.data()})
-        setUsers(data)
-        console.log(user.data())
-        
-      })
+    const querySnapshot = await getDocs(q);
+    let data = [];
+    querySnapshot.forEach((doc) => {
+      data.push({...doc.data()})
     })
+    setUsers(data);
+    // const docsSnap = onSnapshot(q, (onSnap) => {
+    //   let data = [];
+    //   onSnap.docs.forEach(user => {
+    //     data.push({...user.data()})
+    //     setUsers(data)
+    //     console.log(user.data())
+        
+    //   })
+    // })
   }
   useEffect(() => {
     getUsers();
@@ -34,9 +42,9 @@ export default function HomeChat({navigation}) {
 
 
   return (
-    <View style={styles.container}>
+    <View style={styles.container} testID='chatList'>
     <>
-      <TouchableOpacity onPress={logoutUser}>
+      <TouchableOpacity onPress={logoutUser} testID='logoutButton'>
           <View style={styles.button}>
               <Text style={styles.buttonText}>Logout</Text>
           </View>
@@ -46,7 +54,7 @@ export default function HomeChat({navigation}) {
       data={users}
       key={user => user.email}
       renderItem={({item}) => 
-        <ListItem 
+        <ListItem testID='chatUser'
         onPress={() => navigation.navigate('Chatroom', {name:item.name, uid:item.userID, userAvatar:item.photoURL})}
         title={item.name}
         // subTitle={item.email}

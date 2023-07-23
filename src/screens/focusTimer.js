@@ -46,7 +46,7 @@ const FocusTimer = () => {
   return (
     <SafeAreaView style={styles.container}>
 
-      <View style={styles.container}>
+      <View style={styles.container} testID='focusTimer'>
 
       {/* <Header2/> */}
 

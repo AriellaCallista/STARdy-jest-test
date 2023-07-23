@@ -17,32 +17,27 @@ import { finalize } from '../../api/firestore';
 
 const Evidence = ({route, navigation}) => {
 
-    const { otherUserID, otherUser } = route.params;
+    const { otherUserID } = route.params;
 
-    const currentUser = authentication.currentUser.uid
     const [taskName, setTaskName] = useState('');
     const [startDate, setStartDate] = useState(0);
-    const { otherUserEmail } = route.params;
-    console.log(otherUserEmail);
     const [evidenceUploaded, setEvidenceUploaded] = useState(true);
     const [hasFinalized, setHasFinalized] = useState(false);
-
-  const [currentDate, setCurrentDate] = useState('');
-  const [evicheck, setEvicheck] = useState(false); 
-  const [currentTime, setCurrentTime] = useState('');
 
  
 
   // everytime user opens the evidence page, it will store the user start date
   useEffect(() => {
     const docRef = doc(db, "focusSession", authentication.currentUser.uid, "partners", otherUserID);  
-    getDoc(docRef)
-      .then((doc) => {
-          const s = doc.get('start')
-          console.log('startreal: ' + doc.get('start'))
-          setStartDate(s)
-          console.log('start1: ' + startDate)
-        }) 
+    const docSnap = getDoc(docRef);
+    setStartDate(docSnap.get('start'));
+    // getDoc(docRef)
+    //   .then((doc) => {
+    //       const s = doc.get('start')
+    //       console.log('startreal: ' + doc.get('start'))
+    //       setStartDate(s)
+    //       console.log('start1: ' + startDate)
+    //     }) 
     console.log('other user id: ' + otherUserID)
   }, []);
 
@@ -67,6 +62,7 @@ const Evidence = ({route, navigation}) => {
   const onFinalizePressed = (startDate) => {
     setHasFinalized(true);
     finalize(startDate);
+    navigation.navigate("Main Tab");
   }
 
   // const finalize = async () => {
@@ -152,7 +148,7 @@ const Evidence = ({route, navigation}) => {
       <TextInput 
         style={styles.input}
         onChangeText={(value) => setTaskName(value)} />
-      <TouchableOpacity onPress={uploadEvidence}>
+      <TouchableOpacity onPress={uploadEvidence} testID='uploadButton'>
 
 
 
@@ -196,7 +192,8 @@ const Evidence = ({route, navigation}) => {
               marginTop: 50,
               borderRadius: 10,
             }}
-            onPress={() => onFinalizePressed(startDate)}>
+            onPress={() => onFinalizePressed(startDate)}
+            testID='finalizeButton'>
               <Text style={{color: '#fff', fontSize: 18, fontWeight: 'bold' }}>Finalize</Text>
           </TouchableOpacity>
           : <TouchableOpacity
